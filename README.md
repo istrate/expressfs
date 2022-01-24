@@ -1,4 +1,4 @@
-# expressfs is a Static file server over http
+# expressfs is a Simple Static file server over http
 You can use it to upload and download files
 
 # Running expressfs
