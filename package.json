@@ -1,0 +1,24 @@
+{
+  "name": "expressfs",
+  "version": "1.0.0",
+  "description": "Simple static file server",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "static",
+    "file",
+    "server",
+    "simple",
+    "nodejs"
+  ],
+  "author": "Daniel Istrate",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.2",
+    "express-fileupload": "^1.2.1",
+    "path": "^0.12.7",
+    "serve-index": "^1.9.1"
+  }
+}
