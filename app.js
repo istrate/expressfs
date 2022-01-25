@@ -4,8 +4,6 @@ var path =  require('path')
 var d = Date(Date.now()).toString()
 var serverIndex = require('serve-index')
 
-const { join } = require('path/posix')
-
 const app = express()
 
 app.use(
