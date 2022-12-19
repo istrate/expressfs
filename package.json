@@ -1,7 +1,7 @@
 {
   "name": "expressfs",
   "version": "1.0.0",
-  "description": "Simple static file server",
+  "description": "Simple static file server based on express server",
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
