@@ -19,8 +19,8 @@ You can use it to upload and download files
       docker pull quay.io/istrate/expressfs:1.0.0 
    ```
 2. Run image in container
-  ```bash
-     podman run -d -ti -p 8080:8080 quay.io/istrate/expressfs:1.0.0
-  ```	 
+   ```bash
+      podman run -d -ti -p 8080:8080 quay.io/istrate/expressfs:1.0.0
+   ```	 
 
 
