@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ExpressFS - Simple Static File Server</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📁 ExpressFS - Simple Static File Server</h1>
+            <p>Upload, manage, and organize your files with ease</p>
+            <p> ..... delivered to you with compliments by <a href="https://www.linkedin.com/in/daniel-istrate-bb251814/" target="_blank" rel="noopener noreferrer">Daniel Istrate</a> .....</p>
+        </div>
+
+        <div class="main-content">
+            <div id="messageContainer"></div>
+
+            <div class="button-group">
+                <button class="btn" onclick="openUploadModal()">
+                    📤 Upload Files
+                </button>
+                <button class="btn btn-secondary" onclick="toggleFileList()">
+                    📋 List Files
+                </button>
+            </div>
+
+            <div class="file-list-section" id="fileListSection">
+                <div class="file-list-header">
+                    <h2>Uploaded Files</h2>
+                    <button class="btn btn-delete" id="deleteBtn" onclick="deleteSelectedFiles()" disabled>
+                        🗑️ Delete Selected
+                    </button>
+                </div>
+
+                <!-- Summary Section -->
+                <div class="summary-section" id="summarySection" style="display: none;">
+                    <div class="summary-card">
+                        <div class="label">📊 Total Files</div>
+                        <div class="value" id="totalFilesCount">0</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="label">💾 Total Size</div>
+                        <div class="value" id="totalFilesSize">0 B</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="label">📄 Current Page</div>
+                        <div class="value" id="currentPageFiles">0</div>
+                    </div>
+                </div>
+
+                <!-- Pagination Controls -->
+                <div class="pagination-controls" id="paginationControls" style="display: none;">
+                    <div class="items-per-page">
+                        <label for="itemsPerPage">Files per page:</label>
+                        <select id="itemsPerPage" onchange="changeItemsPerPage()">
+                            <option value="10" selected>10</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                    </div>
+                    <div class="pagination-buttons">
+                        <button id="prevBtn" onclick="previousPage()" disabled>← Previous</button>
+                        <span class="page-info" id="pageInfo">Page 1 of 1</span>
+                        <button id="nextBtn" onclick="nextPage()" disabled>Next →</button>
+                    </div>
+                </div>
+
+                <div id="fileListContainer"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Modal -->
+    <div id="uploadModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📤 Upload Files</h2>
+                <span class="close" onclick="closeUploadModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="uploadForm" onsubmit="uploadFiles(event)">
+                    <div class="file-input-wrapper">
+                        <input type="file" name="target_file" id="fileInput" multiple required onchange="updateFileCount()">
+                    </div>
+                    <div id="selectedFilesInfo" class="selected-files-info" style="display: none;"></div>
+                    <div class="progress-container" id="progressContainer">
+                        <div id="progressList"></div>
+                    </div>
+                    <div id="uploadSummary" class="upload-summary" style="display: none;"></div>
+                    <button type="submit" class="btn" id="uploadBtn" style="width: 100%;">
+                        Upload
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/app.js"></script>
+</body>
+</html>

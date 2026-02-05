@@ -1,1 +1,52 @@
+# Node modules
+node_modules
 npm-debug.log
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Git files
+.git
+.gitignore
+
+# Documentation
+README.md
+*.md
+
+# IDE files
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test files
+test
+tests
+*.test.js
+*.spec.js
+
+# Logs
+logs
+*.log
+
+# Temporary files
+tmp
+*.tmp
+
+# Store directory (will be created in container)
+store/*
+!store/.gitkeep
+
+# Old files
+index.html
+success.html
+
+# CI/CD files
+.github
+.gitlab-ci.yml

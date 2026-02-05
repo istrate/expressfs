@@ -3,63 +3,938 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple static file server</title>
+    <title>Simple Static File Server</title>
     <style>
-        body{
-            padding: 0;
+        * {
             margin: 0;
-            font-family: Arial, Helvetica, sans-serif;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        .container{
-            max-width: 400px;
-            margin: 0 auto;
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
             padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
             text-align: center;
         }
 
-        [type="file"]{
-            border: 1px solid #cccccc;
-            background: #f9f9f9;
-            width: 100%;
-            padding: 10px;
+        .header h1 {
+            font-size: 2.5em;
             margin-bottom: 10px;
-            font-size: 18px;
-            border-radius: 2px;
-        }
-        [type="submit"]{
-            cursor: pointer;
-            font-size: 16px;
-            background: #0628e7;
-            color: #ffffff;
-            padding: 10px 20px;
-            border: 1px solid rgba(0,0,0,.1);
-            border-radius: 3px;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-        }
-        [type="button"]{
-            cursor: pointer;
-            font-size: 16px;
-            background: #0628e7;
-            color: #ffffff;
-            padding: 10px 20px;
-            border: 1px solid rgba(0,0,0,.1);
-            border-radius: 3px;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
         }
 
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            padding: 40px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 40px;
+        }
+
+        .btn {
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: 600;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-delete {
+            padding: 10px 30px;
+            font-size: 16px;
+        }
+
+        .btn-delete:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 0;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px 10px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.5em;
+        }
+
+        .close {
+            color: white;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .close:hover {
+            transform: scale(1.2);
+        }
+
+        .modal-body {
+            padding: 30px;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        input[type="file"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px dashed #667eea;
+            border-radius: 8px;
+            background: #f8f9ff;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        input[type="file"]:hover {
+            border-color: #764ba2;
+            background: #f0f2ff;
+        }
+
+        .selected-files-info {
+            margin: 15px 0;
+            padding: 10px;
+            background: #f0f2ff;
+            border-radius: 6px;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .progress-container {
+            margin: 20px 0;
+            display: none;
+        }
+
+        .progress-container.active {
+            display: block;
+        }
+
+        .file-progress-item {
+            margin-bottom: 15px;
+        }
+
+        .file-progress-name {
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 25px;
+            background: #e0e7ff;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .progress-fill.complete {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+
+        .progress-fill.error {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        }
+
+        .file-list-section {
+            margin-top: 40px;
+            display: none;
+        }
+
+        .file-list-section.visible {
+            display: block;
+        }
+
+        .file-list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .file-list-header h2 {
+            color: #667eea;
+            font-size: 1.8em;
+        }
+
+        /* Summary Section */
+        .summary-section {
+            background: linear-gradient(135deg, #f8f9ff 0%, #e0e7ff 100%);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .summary-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .summary-card .label {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 8px;
+        }
+
+        .summary-card .value {
+            color: #667eea;
+            font-size: 1.8em;
+            font-weight: 700;
+        }
+
+        /* Pagination Controls */
+        .pagination-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .items-per-page {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .items-per-page label {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .items-per-page select {
+            padding: 8px 15px;
+            border: 2px solid #667eea;
+            border-radius: 6px;
+            background: white;
+            color: #667eea;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .items-per-page select:hover {
+            background: #f8f9ff;
+        }
+
+        .pagination-buttons {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .pagination-buttons button {
+            padding: 8px 20px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .pagination-buttons button:hover:not(:disabled) {
+            background: #667eea;
+            color: white;
+        }
+
+        .pagination-buttons button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .pagination-buttons .page-info {
+            color: #667eea;
+            font-weight: 600;
+            padding: 0 10px;
+        }
+
+        .file-list {
+            display: block;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 10px;
+            background: #f8f9ff;
+            border-radius: 8px;
+            border: 1px solid #e0e7ff;
+            transition: all 0.3s ease;
+        }
+
+        .file-item:hover {
+            background: #f0f2ff;
+            border-color: #667eea;
+            transform: translateX(5px);
+        }
+
+        .file-checkbox {
+            width: 20px;
+            height: 20px;
+            margin-right: 15px;
+            cursor: pointer;
+        }
+
+        .file-info {
+            flex: 1;
+        }
+
+        .file-name {
+            font-weight: 600;
+            color: #333;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+
+        .file-meta {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .message {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 500;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #667eea;
+            font-size: 1.2em;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state svg {
+            width: 100px;
+            height: 100px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+
+        .upload-summary {
+            margin-top: 15px;
+            padding: 10px;
+            background: #f0f2ff;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .upload-summary.success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .upload-summary.partial {
+            background: #fff3cd;
+            color: #856404;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Upload files to server</h1>
+        <div class="header">
+            <h1>📁 ExpressFS - Simple Static File Server </h1>
+            <p>Upload, manage, and organize your files with ease</p>
+        </div>
 
-        <form action="" method="POST" enctype="multipart/form-data">
-            <input type="file" name="target_file" required>
-            <input type="submit" value="Upload">
-            <input type="button" value="View files on server" onclick="location.href='/store'">
-        </form>
-                
+        <div class="main-content">
+            <div id="messageContainer"></div>
+
+            <div class="button-group">
+                <button class="btn" onclick="openUploadModal()">
+                    📤 Upload Files
+                </button>
+                <button class="btn btn-secondary" onclick="toggleFileList()">
+                    📋 List Files
+                </button>
+            </div>
+
+            <div class="file-list-section" id="fileListSection">
+                <div class="file-list-header">
+                    <h2>Uploaded Files</h2>
+                    <button class="btn btn-delete" id="deleteBtn" onclick="deleteSelectedFiles()" disabled>
+                        🗑️ Delete Selected
+                    </button>
+                </div>
+
+                <!-- Summary Section -->
+                <div class="summary-section" id="summarySection" style="display: none;">
+                    <div class="summary-card">
+                        <div class="label">📊 Total Files</div>
+                        <div class="value" id="totalFilesCount">0</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="label">💾 Total Size</div>
+                        <div class="value" id="totalFilesSize">0 B</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="label">📄 Current Page</div>
+                        <div class="value" id="currentPageFiles">0</div>
+                    </div>
+                </div>
+
+                <!-- Pagination Controls -->
+                <div class="pagination-controls" id="paginationControls" style="display: none;">
+                    <div class="items-per-page">
+                        <label for="itemsPerPage">Files per page:</label>
+                        <select id="itemsPerPage" onchange="changeItemsPerPage()">
+                            <option value="10" selected>10</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                    </div>
+                    <div class="pagination-buttons">
+                        <button id="prevBtn" onclick="previousPage()" disabled>← Previous</button>
+                        <span class="page-info" id="pageInfo">Page 1 of 1</span>
+                        <button id="nextBtn" onclick="nextPage()" disabled>Next →</button>
+                    </div>
+                </div>
+
+                <div id="fileListContainer"></div>
+            </div>
+        </div>
     </div>
+
+    <!-- Upload Modal -->
+    <div id="uploadModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📤 Upload Files</h2>
+                <span class="close" onclick="closeUploadModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="uploadForm" onsubmit="uploadFiles(event)">
+                    <div class="file-input-wrapper">
+                        <input type="file" name="target_file" id="fileInput" multiple required onchange="updateFileCount()">
+                    </div>
+                    <div id="selectedFilesInfo" class="selected-files-info" style="display: none;"></div>
+                    <div class="progress-container" id="progressContainer">
+                        <div id="progressList"></div>
+                    </div>
+                    <div id="uploadSummary" class="upload-summary" style="display: none;"></div>
+                    <button type="submit" class="btn" id="uploadBtn" style="width: 100%;">
+                        Upload
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let filesVisible = false;
+        let currentPage = 1;
+        let itemsPerPage = 10;
+        let paginationData = null;
+        let uploadInProgress = false;
+
+        function openUploadModal() {
+            document.getElementById('uploadModal').style.display = 'block';
+        }
+
+        function closeUploadModal() {
+            if (uploadInProgress) {
+                if (!confirm('Upload is in progress. Are you sure you want to close?')) {
+                    return;
+                }
+            }
+            document.getElementById('uploadModal').style.display = 'none';
+            document.getElementById('uploadForm').reset();
+            document.getElementById('progressContainer').classList.remove('active');
+            document.getElementById('progressList').innerHTML = '';
+            document.getElementById('selectedFilesInfo').style.display = 'none';
+            document.getElementById('uploadSummary').style.display = 'none';
+            uploadInProgress = false;
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('uploadModal');
+            if (event.target === modal && !uploadInProgress) {
+                closeUploadModal();
+            }
+        }
+
+        function updateFileCount() {
+            const fileInput = document.getElementById('fileInput');
+            const info = document.getElementById('selectedFilesInfo');
+            
+            if (fileInput.files.length > 0) {
+                const totalSize = Array.from(fileInput.files).reduce((sum, file) => sum + file.size, 0);
+                info.textContent = `${fileInput.files.length} file(s) selected (${formatFileSize(totalSize)})`;
+                info.style.display = 'block';
+            } else {
+                info.style.display = 'none';
+            }
+        }
+
+        function showMessage(message, type) {
+            const container = document.getElementById('messageContainer');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            messageDiv.textContent = message;
+            container.innerHTML = '';
+            container.appendChild(messageDiv);
+
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 5000);
+        }
+
+        async function uploadFiles(event) {
+            event.preventDefault();
+            
+            const fileInput = document.getElementById('fileInput');
+            const files = Array.from(fileInput.files);
+            
+            if (files.length === 0) {
+                showMessage('Please select at least one file', 'error');
+                return;
+            }
+
+            const progressContainer = document.getElementById('progressContainer');
+            const progressList = document.getElementById('progressList');
+            const uploadBtn = document.getElementById('uploadBtn');
+            const uploadSummary = document.getElementById('uploadSummary');
+
+            progressContainer.classList.add('active');
+            progressList.innerHTML = '';
+            uploadBtn.disabled = true;
+            uploadInProgress = true;
+            uploadSummary.style.display = 'none';
+
+            // Create progress bars for each file
+            const progressBars = {};
+            files.forEach((file, index) => {
+                const progressItem = document.createElement('div');
+                progressItem.className = 'file-progress-item';
+                progressItem.innerHTML = `
+                    <div class="file-progress-name">📄 ${file.name} (${formatFileSize(file.size)})</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-${index}">0%</div>
+                    </div>
+                `;
+                progressList.appendChild(progressItem);
+                progressBars[index] = document.getElementById(`progress-${index}`);
+            });
+
+            const results = [];
+
+            // Upload files sequentially to show individual progress
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const formData = new FormData();
+                formData.append('target_file', file);
+
+                try {
+                    const result = await uploadSingleFile(formData, progressBars[i]);
+                    results.push({ filename: file.name, success: true });
+                } catch (error) {
+                    results.push({ filename: file.name, success: false, error: error.message });
+                }
+            }
+
+            uploadInProgress = false;
+            uploadBtn.disabled = false;
+
+            // Show summary
+            const successCount = results.filter(r => r.success).length;
+            const failCount = results.length - successCount;
+            
+            let summaryClass = 'success';
+            let summaryText = `✅ Successfully uploaded ${successCount} file(s)`;
+            
+            if (failCount > 0) {
+                summaryClass = 'partial';
+                summaryText = `⚠️ Uploaded ${successCount} file(s), ${failCount} failed`;
+            }
+            
+            uploadSummary.className = `upload-summary ${summaryClass}`;
+            uploadSummary.textContent = summaryText;
+            uploadSummary.style.display = 'block';
+
+            showMessage(summaryText, failCount > 0 ? 'error' : 'success');
+
+            if (filesVisible) {
+                setTimeout(() => loadFiles(), 1000);
+            }
+        }
+
+        function uploadSingleFile(formData, progressBar) {
+            return new Promise((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+
+                xhr.upload.addEventListener('progress', (e) => {
+                    if (e.lengthComputable) {
+                        const percentComplete = Math.round((e.loaded / e.total) * 100);
+                        progressBar.style.width = percentComplete + '%';
+                        progressBar.textContent = percentComplete + '%';
+                    }
+                });
+
+                xhr.addEventListener('load', () => {
+                    if (xhr.status === 200) {
+                        progressBar.style.width = '100%';
+                        progressBar.textContent = '✓ Complete';
+                        progressBar.classList.add('complete');
+                        resolve();
+                    } else {
+                        progressBar.style.width = '100%';
+                        progressBar.textContent = '✗ Failed';
+                        progressBar.classList.add('error');
+                        reject(new Error('Upload failed'));
+                    }
+                });
+
+                xhr.addEventListener('error', () => {
+                    progressBar.style.width = '100%';
+                    progressBar.textContent = '✗ Error';
+                    progressBar.classList.add('error');
+                    reject(new Error('Network error'));
+                });
+
+                xhr.open('POST', '/api/upload');
+                xhr.send(formData);
+            });
+        }
+
+        async function toggleFileList() {
+            filesVisible = !filesVisible;
+            const section = document.getElementById('fileListSection');
+            
+            if (filesVisible) {
+                section.classList.add('visible');
+                currentPage = 1;
+                await loadFiles();
+            } else {
+                section.classList.remove('visible');
+            }
+        }
+
+        async function loadFiles() {
+            const container = document.getElementById('fileListContainer');
+            container.innerHTML = '<div class="loading"><div class="spinner"></div>Loading files...</div>';
+
+            try {
+                const response = await fetch(`/api/files?page=${currentPage}&limit=${itemsPerPage}`);
+                const data = await response.json();
+                
+                paginationData = data.pagination;
+                const files = data.files;
+
+                // Update summary section
+                updateSummary(paginationData);
+
+                if (paginationData.totalFiles === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
+                                <polyline points="13 2 13 9 20 9"></polyline>
+                            </svg>
+                            <h3>No files uploaded yet</h3>
+                            <p>Click "Upload Files" to get started</p>
+                        </div>
+                    `;
+                    document.getElementById('summarySection').style.display = 'none';
+                    document.getElementById('paginationControls').style.display = 'none';
+                    return;
+                }
+
+                // Show pagination controls
+                document.getElementById('paginationControls').style.display = 'flex';
+
+                let html = '<div class="file-list">';
+                files.forEach(file => {
+                    const date = new Date(file.uploadDate);
+                    const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+                    const fileSize = formatFileSize(file.size);
+                    
+                    html += `
+                        <div class="file-item">
+                            <input type="checkbox" class="file-checkbox" value="${file.name}" onchange="updateDeleteButton()">
+                            <div class="file-info">
+                                <div class="file-name">📄 ${file.name}</div>
+                                <div class="file-meta">
+                                    📅 ${formattedDate} | 💾 ${fileSize}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                container.innerHTML = html;
+
+                // Update pagination buttons
+                updatePaginationButtons();
+
+            } catch (error) {
+                container.innerHTML = `
+                    <div class="message error">
+                        ❌ Failed to load files: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        function updateSummary(pagination) {
+            const summarySection = document.getElementById('summarySection');
+            summarySection.style.display = 'grid';
+
+            document.getElementById('totalFilesCount').textContent = pagination.totalFiles;
+            document.getElementById('totalFilesSize').textContent = formatFileSize(pagination.totalSize);
+            document.getElementById('currentPageFiles').textContent = 
+                `${Math.min((pagination.currentPage - 1) * pagination.filesPerPage + 1, pagination.totalFiles)}-${Math.min(pagination.currentPage * pagination.filesPerPage, pagination.totalFiles)}`;
+        }
+
+        function updatePaginationButtons() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const pageInfo = document.getElementById('pageInfo');
+
+            prevBtn.disabled = !paginationData.hasPrevPage;
+            nextBtn.disabled = !paginationData.hasNextPage;
+            pageInfo.textContent = `Page ${paginationData.currentPage} of ${paginationData.totalPages}`;
+        }
+
+        function previousPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                loadFiles();
+            }
+        }
+
+        function nextPage() {
+            if (paginationData && currentPage < paginationData.totalPages) {
+                currentPage++;
+                loadFiles();
+            }
+        }
+
+        function changeItemsPerPage() {
+            itemsPerPage = parseInt(document.getElementById('itemsPerPage').value);
+            currentPage = 1;
+            loadFiles();
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        }
+
+        function updateDeleteButton() {
+            const checkboxes = document.querySelectorAll('.file-checkbox:checked');
+            const deleteBtn = document.getElementById('deleteBtn');
+            deleteBtn.disabled = checkboxes.length === 0;
+        }
+
+        async function deleteSelectedFiles() {
+            const checkboxes = document.querySelectorAll('.file-checkbox:checked');
+            const filesToDelete = Array.from(checkboxes).map(cb => cb.value);
+
+            if (filesToDelete.length === 0) {
+                return;
+            }
+
+            if (!confirm(`Are you sure you want to delete ${filesToDelete.length} file(s)?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/delete', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ files: filesToDelete })
+                });
+
+                const result = await response.json();
+
+                if (response.ok || response.status === 207) {
+                    const successCount = result.results.filter(r => r.success).length;
+                    showMessage(`✅ Successfully deleted ${successCount} file(s)`, 'success');
+                    await loadFiles();
+                } else {
+                    showMessage(`❌ ${result.error}`, 'error');
+                }
+            } catch (error) {
+                showMessage(`❌ Delete failed: ${error.message}`, 'error');
+            }
+        }
+    </script>
 </body>
 </html>

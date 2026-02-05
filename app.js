@@ -1,40 +1,80 @@
-var express = require('express')
-var fileUpload = require ('express-fileupload')
-var path =  require('path')
-var d = Date(Date.now()).toString()
-var serverIndex = require('serve-index')
+/**
+ * ExpressFS - Simple Static File Server
+ * Refactored and optimized version
+ */
 
-const app = express()
+const express = require('express');
+const fileUpload = require('express-fileupload');
+const path = require('path');
+const serveIndex = require('serve-index');
 
-app.use(
-    fileUpload({
-        useTempFiles : false,
-        tempFileDir : path.join(__dirname,'tmp'),
-    })
-)
+// Import configuration and utilities
+const config = require('./config/config');
+const logger = require('./utils/logger');
+const FileHelper = require('./utils/fileHelper');
+const { errorHandler, notFoundHandler } = require('./middleware/errorHandler');
 
+// Import routes
+const fileRoutes = require('./routes/fileRoutes');
+
+// Initialize Express app
+const app = express();
+
+// Middleware setup
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// File upload middleware
+app.use(fileUpload({
+    useTempFiles: config.upload.useTempFiles,
+    tempFileDir: path.join(__dirname, config.upload.tempFileDir),
+    limits: { fileSize: config.upload.maxFileSize }
+}));
+
+// Serve static files from public directory
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Ensure store directory exists
+const storeDir = path.join(__dirname, config.upload.storeDirectory);
+FileHelper.ensureDirectoryExists(storeDir);
+
+// Main landing page
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'))
-})
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
-app.post('/', (req, res) => {
-    if (!req.files || Object.keys(req.files).length === 0) {
-        console.log(d + ' No files were selected for upload ...')
-        return res.status(400).send('No files were selected for upload ...')
-    }
+// API routes
+app.use('/api', fileRoutes);
 
-    let targetFile = req.files.target_file;
+// Serve store directory with directory listing
+app.use('/store', 
+    express.static(storeDir), 
+    serveIndex(storeDir, { icons: true })
+);
 
-    targetFile.mv(path.join(__dirname, 'store', targetFile.name), (err) => {
-        if (err) {
-            console.log(d + err)
-           return res.status(500).send(err)
-        }
-        console.log(d + " File " + targetFile.name + " uploaded successfuly")
-        res.sendFile(path.join(__dirname, 'success.html'))
-    })
-})
+// Error handling middleware (must be last)
+app.use(notFoundHandler);
+app.use(errorHandler);
 
-app.use('/store', express.static('store'), serverIndex('store', {'icons': true}))
- 
-app.listen(8080, () => console.log( d+' Simple static file server started and listening on port 8080'))
+// Start server
+const PORT = config.server.port;
+const HOST = config.server.host;
+
+app.listen(PORT, HOST, () => {
+    logger.info(`ExpressFS server started and listening on ${HOST}:${PORT}`);
+    logger.info(`Environment: ${process.env.NODE_ENV || 'production'}`);
+    logger.info(`Store directory: ${storeDir}`);
+});
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+    logger.info('SIGTERM signal received: closing HTTP server');
+    process.exit(0);
+});
+
+process.on('SIGINT', () => {
+    logger.info('SIGINT signal received: closing HTTP server');
+    process.exit(0);
+});
+
+module.exports = app;
