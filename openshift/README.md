@@ -37,10 +37,11 @@ Or use an existing project:
 oc project your-project-name
 ```
 
-#### 2. Create Persistent Volume Claim
+#### 2-5. Create All Resources in One Command
 
 ```bash
 oc apply -f - <<EOF
+---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -54,13 +55,7 @@ spec:
     requests:
       storage: 10Gi
   storageClassName: standard
-EOF
-```
-
-#### 3. Create Deployment
-
-```bash
-oc apply -f - <<EOF
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -122,13 +117,7 @@ spec:
         - name: store-volume
           persistentVolumeClaim:
             claimName: expressfs-pvc
-EOF
-```
-
-#### 4. Create Service
-
-```bash
-oc apply -f - <<EOF
+---
 apiVersion: v1
 kind: Service
 metadata:
@@ -144,10 +133,32 @@ spec:
       targetPort: 8080
       name: http
   type: ClusterIP
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: expressfs
+  labels:
+    app: expressfs
+spec:
+  path: /
+  to:
+    kind: Service
+    name: expressfs
+    weight: 100
+  port:
+    targetPort: http
+  wildcardPolicy: None
 EOF
 ```
 
-#### 5. Create Route
+This single command creates:
+- **PersistentVolumeClaim** (10Gi storage)
+- **Deployment** (with health checks and resource limits)
+- **Service** (ClusterIP for internal communication)
+- **Route** (for external access)
+
+#### Alternative: Create Route Separately (if needed)
 
 ```bash
 oc apply -f - <<EOF
