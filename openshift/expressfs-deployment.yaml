@@ -6,7 +6,7 @@ metadata:
   namespace: default
   labels:
     app: expressfs
-    version: "2.0.1"
+    version: "2.0.2"
 spec:
   replicas: 1
   selector:
@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
         - name: expressfs
-          image: quay.io/istrate/expressfs:2.0.1
+          image: quay.io/istrate/expressfs:2.0.2
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
