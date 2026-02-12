@@ -44,6 +44,14 @@ window.onclick = function(event) {
     }
 }
 
+// Go to List Files from upload modal
+function goToListFiles() {
+    closeUploadModal();
+    if (!state.filesVisible) {
+        toggleFileList();
+    }
+}
+
 // Update file count display
 function updateFileCount() {
     const fileInput = document.getElementById('fileInput');
