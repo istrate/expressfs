@@ -190,7 +190,7 @@ router.post('/download-bulk', async (req, res, next) => {
         });
 
         // Set response headers
-        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -4);
         const zipFilename = `expressfs-files-${timestamp}.zip`;
         res.attachment(zipFilename);
         res.setHeader('Content-Type', 'application/zip');
