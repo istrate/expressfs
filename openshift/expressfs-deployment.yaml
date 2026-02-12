@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
         - name: expressfs
-          image: quay.io/istrate/expressfs:2.0.0
+          image: quay.io/istrate/expressfs:2.0.1
           imagePullPolicy: Always
           ports:
             - containerPort: 8080

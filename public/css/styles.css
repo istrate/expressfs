@@ -100,6 +100,27 @@ body {
     transform: none;
 }
 
+.btn-download {
+    padding: 10px 30px;
+    font-size: 16px;
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+}
+
+.btn-download:hover {
+    box-shadow: 0 6px 20px rgba(40, 167, 69, 0.6);
+}
+
+.btn-download:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 10px;
+}
+
 /* Modal Styles */
 .modal {
     display: none;
@@ -419,6 +440,47 @@ input[type="file"]:hover {
 .file-meta {
     color: #666;
     font-size: 0.9em;
+}
+
+.file-actions {
+    display: flex;
+    gap: 8px;
+    margin-left: 15px;
+}
+
+.btn-icon {
+    background: none;
+    border: none;
+    font-size: 1.5em;
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-download-single {
+    color: #28a745;
+}
+
+.btn-download-single:hover {
+    background: #d4edda;
+    transform: scale(1.1);
+}
+
+.btn-delete-single {
+    color: #dc3545;
+}
+
+.btn-delete-single:hover {
+    background: #f8d7da;
+    transform: scale(1.1);
+}
+
+.btn-icon:active {
+    transform: scale(0.95);
 }
 
 .message {

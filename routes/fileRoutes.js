@@ -144,4 +144,89 @@ router.post('/delete', validateDeleteRequest, async (req, res, next) => {
     }
 });
 
+/**
+ * GET /api/download/:filename
+ * Download a single file
+ */
+router.get('/download/:filename', async (req, res, next) => {
+    try {
+        const filename = req.params.filename;
+        const filePath = path.join(storeDir, filename);
+
+        // Check if file exists
+        if (!FileHelper.fileExists(filePath)) {
+            return res.status(404).json({ error: 'File not found' });
+        }
+
+        logger.info(`Downloading file: ${filename}`);
+        res.download(filePath, filename, (err) => {
+            if (err) {
+                logger.error(`Error downloading file: ${filename}`, err);
+                if (!res.headersSent) {
+                    next(err);
+                }
+            }
+        });
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
+ * POST /api/download-bulk
+ * Download multiple files as a ZIP archive
+ */
+router.post('/download-bulk', async (req, res, next) => {
+    try {
+        const { files } = req.body;
+
+        if (!files || !Array.isArray(files) || files.length === 0) {
+            return res.status(400).json({ error: 'No files specified for download' });
+        }
+
+        const archiver = require('archiver');
+        const archive = archiver('zip', {
+            zlib: { level: 9 } // Maximum compression
+        });
+
+        // Set response headers
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+        const zipFilename = `expressfs-files-${timestamp}.zip`;
+        res.attachment(zipFilename);
+        res.setHeader('Content-Type', 'application/zip');
+
+        // Pipe archive to response
+        archive.pipe(res);
+
+        // Add files to archive
+        let filesAdded = 0;
+        for (const filename of files) {
+            const filePath = path.join(storeDir, filename);
+            if (FileHelper.fileExists(filePath)) {
+                archive.file(filePath, { name: filename });
+                filesAdded++;
+            } else {
+                logger.warn(`File not found for bulk download: ${filename}`);
+            }
+        }
+
+        if (filesAdded === 0) {
+            return res.status(404).json({ error: 'None of the specified files were found' });
+        }
+
+        logger.info(`Bulk download: ${filesAdded} file(s) added to archive`);
+
+        // Finalize archive
+        archive.finalize();
+
+        archive.on('error', (err) => {
+            logger.error('Error creating archive', err);
+            next(err);
+        });
+
+    } catch (error) {
+        next(error);
+    }
+});
+
 module.exports = router;

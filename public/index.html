@@ -29,9 +29,14 @@
             <div class="file-list-section" id="fileListSection">
                 <div class="file-list-header">
                     <h2>Uploaded Files</h2>
-                    <button class="btn btn-delete" id="deleteBtn" onclick="deleteSelectedFiles()" disabled>
-                        🗑️ Delete Selected
-                    </button>
+                    <div class="action-buttons">
+                        <button class="btn btn-download" id="downloadBtn" onclick="downloadSelectedFiles()" disabled>
+                            📥 Download Selected
+                        </button>
+                        <button class="btn btn-delete" id="deleteBtn" onclick="deleteSelectedFiles()" disabled>
+                            🗑️ Delete Selected
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Summary Section -->

@@ -244,15 +244,24 @@ async function loadFiles() {
             const date = new Date(file.uploadDate);
             const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
             const fileSize = formatFileSize(file.size);
+            const encodedFilename = encodeURIComponent(file.name);
             
             html += `
                 <div class="file-item">
-                    <input type="checkbox" class="file-checkbox" value="${file.name}" onchange="updateDeleteButton()">
+                    <input type="checkbox" class="file-checkbox" value="${file.name}" onchange="updateActionButtons()">
                     <div class="file-info">
                         <div class="file-name">📄 ${file.name}</div>
                         <div class="file-meta">
                             📅 ${formattedDate} | 💾 ${fileSize}
                         </div>
+                    </div>
+                    <div class="file-actions">
+                        <button class="btn-icon btn-download-single" onclick="downloadSingleFile('${encodedFilename}')" title="Download">
+                            📥
+                        </button>
+                        <button class="btn-icon btn-delete-single" onclick="deleteSingleFile('${encodedFilename}')" title="Delete">
+                            🗑️
+                        </button>
                     </div>
                 </div>
             `;
@@ -326,11 +335,20 @@ function formatFileSize(bytes) {
     return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
 }
 
-// Update delete button state
-function updateDeleteButton() {
+// Update action buttons state (delete and download)
+function updateActionButtons() {
     const checkboxes = document.querySelectorAll('.file-checkbox:checked');
     const deleteBtn = document.getElementById('deleteBtn');
-    deleteBtn.disabled = checkboxes.length === 0;
+    const downloadBtn = document.getElementById('downloadBtn');
+    const hasSelection = checkboxes.length > 0;
+    
+    deleteBtn.disabled = !hasSelection;
+    downloadBtn.disabled = !hasSelection;
+}
+
+// Backward compatibility
+function updateDeleteButton() {
+    updateActionButtons();
 }
 
 // Delete selected files
@@ -366,5 +384,98 @@ async function deleteSelectedFiles() {
         }
     } catch (error) {
         showMessage(`❌ Delete failed: ${error.message}`, 'error');
+    }
+}
+
+// Download a single file
+function downloadSingleFile(encodedFilename) {
+    const filename = decodeURIComponent(encodedFilename);
+    window.location.href = `/api/download/${encodedFilename}`;
+    showMessage(`📥 Downloading ${filename}...`, 'success');
+}
+
+// Delete a single file
+async function deleteSingleFile(encodedFilename) {
+    const filename = decodeURIComponent(encodedFilename);
+    
+    if (!confirm(`Are you sure you want to delete "${filename}"?`)) {
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/delete', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ files: [filename] })
+        });
+
+        const result = await response.json();
+
+        if (response.ok || response.status === 207) {
+            showMessage(`✅ File "${filename}" deleted successfully`, 'success');
+            await loadFiles();
+        } else {
+            showMessage(`❌ ${result.error}`, 'error');
+        }
+    } catch (error) {
+        showMessage(`❌ Delete failed: ${error.message}`, 'error');
+    }
+}
+
+// Download selected files as ZIP
+async function downloadSelectedFiles() {
+    const checkboxes = document.querySelectorAll('.file-checkbox:checked');
+    const filesToDownload = Array.from(checkboxes).map(cb => cb.value);
+
+    if (filesToDownload.length === 0) {
+        return;
+    }
+
+    try {
+        showMessage(`📥 Preparing download of ${filesToDownload.length} file(s)...`, 'success');
+
+        const response = await fetch('/api/download-bulk', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ files: filesToDownload })
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            showMessage(`❌ ${error.error}`, 'error');
+            return;
+        }
+
+        // Get the blob from response
+        const blob = await response.blob();
+        
+        // Get filename from Content-Disposition header or use default
+        const contentDisposition = response.headers.get('Content-Disposition');
+        let filename = 'expressfs-files.zip';
+        if (contentDisposition) {
+            const filenameMatch = contentDisposition.match(/filename="?(.+)"?/);
+            if (filenameMatch) {
+                filename = filenameMatch[1];
+            }
+        }
+
+        // Create download link and trigger download
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+
+        showMessage(`✅ Downloaded ${filesToDownload.length} file(s) as ${filename}`, 'success');
+    } catch (error) {
+        showMessage(`❌ Download failed: ${error.message}`, 'error');
     }
 }

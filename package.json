@@ -22,13 +22,14 @@
   "license": "ISC",
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/expressfs"
+    "url": "https://github.com/istrate/expressfs"
   },
   "engines": {
     "node": ">=14.0.0",
     "npm": ">=6.0.0"
   },
   "dependencies": {
+    "archiver": "^7.0.1",
     "express": "^5.2.1",
     "express-fileupload": "^1.5.2",
     "path": "^0.12.7",
