@@ -465,9 +465,11 @@ async function downloadSelectedFiles() {
         const contentDisposition = response.headers.get('Content-Disposition');
         let filename = 'expressfs-files.zip';
         if (contentDisposition) {
-            const filenameMatch = contentDisposition.match(/filename="?(.+)"?/);
-            if (filenameMatch) {
-                filename = filenameMatch[1];
+            // Extract filename from Content-Disposition header
+            // Format: attachment; filename="expressfs-files-2026-02-12T10-52-13.zip"
+            const matches = contentDisposition.match(/filename[^;=\n]*=["']?([^"';\n]*)["']?/);
+            if (matches && matches[1]) {
+                filename = matches[1].trim();
             }
         }
 
@@ -476,7 +478,7 @@ async function downloadSelectedFiles() {
         const a = document.createElement('a');
         a.style.display = 'none';
         a.href = url;
-        a.download = filename;
+        a.download = filename.trim();
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
