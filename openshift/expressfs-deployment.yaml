@@ -6,7 +6,7 @@ metadata:
   namespace: default
   labels:
     app: expressfs
-    version: "2.0.0"
+    version: "2.0.1"
 spec:
   replicas: 1
   selector:
@@ -16,7 +16,7 @@ spec:
     metadata:
       labels:
         app: expressfs
-        version: "2.0.0"
+        version: "2.0.1"
     spec:
       containers:
         - name: expressfs
