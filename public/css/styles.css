@@ -194,6 +194,17 @@ body {
     padding: 30px;
 }
 
+.modal-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.modal-buttons .btn {
+    flex: 1;
+    width: auto;
+}
+
 .file-input-wrapper {
     position: relative;
     margin-bottom: 20px;
