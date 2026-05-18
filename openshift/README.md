@@ -62,7 +62,7 @@ metadata:
   name: expressfs
   labels:
     app: expressfs
-    version: "2.0.0"
+    version: "2.0.4"
 spec:
   replicas: 1
   selector:
@@ -72,11 +72,11 @@ spec:
     metadata:
       labels:
         app: expressfs
-        version: "2.0.0"
+        version: "2.0.4"
     spec:
       containers:
         - name: expressfs
-          image: quay.io/istrate/expressfs:2.0.0
+          image: quay.io/istrate/expressfs:2.0.4
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
@@ -273,7 +273,7 @@ oc patch pvc expressfs-pvc -p '{"spec":{"resources":{"requests":{"storage":"20Gi
 
 ```bash
 # Update to new version
-oc set image deployment/expressfs expressfs=quay.io/istrate/expressfs:2.1.0
+oc set image deployment/expressfs expressfs=quay.io/istrate/expressfs:2.0.4
 
 # Check rollout status
 oc rollout status deployment/expressfs
@@ -463,13 +463,13 @@ oc set volume deployment/expressfs \
 
 ```bash
 # Create ImageStream
-oc import-image expressfs:2.0.0 \
-  --from=quay.io/istrate/expressfs:2.0.0 \
+oc import-image expressfs:2.0.4 \
+  --from=quay.io/istrate/expressfs:2.0.4 \
   --confirm
 
 # Update deployment to use ImageStream
 oc set triggers deployment/expressfs \
-  --from-image=expressfs:2.0.0 \
+  --from-image=expressfs:2.0.4 \
   --containers=expressfs
 ```
 

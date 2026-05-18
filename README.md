@@ -13,33 +13,6 @@ A modern, feature-rich static file server built with Express.js, featuring file 
 - 📝 **Comprehensive Logging** - Structured logging for all operations
 - 🎨 **Modern UI** - Responsive design with smooth animations
 
-## Project Structure
-
-```
-expressfs/
-├── app.js                  # Main application entry point
-├── config/
-│   └── config.js          # Application configuration
-├── middleware/
-│   ├── errorHandler.js    # Error handling middleware
-│   └── validator.js       # Request validation middleware
-├── routes/
-│   └── fileRoutes.js      # File management API routes
-├── utils/
-│   ├── logger.js          # Logging utility
-│   └── fileHelper.js      # File operations helper
-├── public/
-│   ├── index.html         # Main HTML page
-│   ├── css/
-│   │   └── styles.css     # Application styles
-│   └── js/
-│       └── app.js         # Frontend JavaScript
-├── store/                 # File storage directory
-├── package.json           # Dependencies and scripts
-├── .env.example          # Environment variables example
-└── README.md             # This file
-```
-
 ## Installation
 
 ### Prerequisites
@@ -171,27 +144,11 @@ docker build -t expressfs:latest .
 docker run -d -p 8080:8080 --name expressfs expressfs:latest
 ```
 
-### Using Docker Compose
-
-```yaml
-version: '3.8'
-services:
-  expressfs:
-    image: expressfs:latest
-    ports:
-      - "8080:8080"
-    volumes:
-      - ./store:/app/store
-    environment:
-      - NODE_ENV=production
-      - PORT=8080
-```
-
 ## OpenShift Deployment
 
 ### Quick Deploy
 
-Deploy ExpressFS to OpenShift with a single command:
+Update storage class in deployment.yaml if needed, then deploy ExpressFS to OpenShift with a single command:
 
 ```bash
 oc apply -f openshift/expressfs-deployment.yaml
@@ -203,80 +160,8 @@ This creates:
 - **Route** for external access
 - **PersistentVolumeClaim** (10Gi) for file storage
 
-### Access the Application
+Alternatively, you can copy the content of `openshift/expressfs-deployment.yaml` into the OpenShift web console to create the resources manually.
 
-```bash
-# Get the route URL
-oc get route expressfs -o jsonpath='{"https://"}{.spec.host}{"\n"}'
-```
-
-### Verify Deployment
-
-```bash
-# Check all resources
-oc get all -l app=expressfs
-
-# View logs
-oc logs -l app=expressfs -f
-```
-
-### Detailed Instructions
-
-For comprehensive deployment instructions, troubleshooting, scaling, monitoring, and advanced configuration, see:
-
-📖 **[OpenShift Deployment Guide](openshift/README.md)**
-
-The guide includes:
-- Step-by-step deployment instructions
-- Configuration options
-- Scaling and updates
-- Troubleshooting tips
-- Security best practices
-- Backup and restore procedures
-- Advanced configurations
-
-## Development
-
-### Running in Development Mode
-
-```bash
-NODE_ENV=development npm start
-```
-
-### Project Scripts
-
-- `npm start` - Start the server
-- `npm test` - Run tests (to be implemented)
-
-## Security Considerations
-
-- File upload size limits are enforced
-- Filename validation prevents directory traversal attacks
-- Input validation on all API endpoints
-- CORS can be configured in `app.js` if needed
-- Consider adding authentication for production use
-
-## Performance Optimization
-
-- Static files are served with Express static middleware
-- Pagination reduces memory usage for large file lists
-- Async/await pattern for non-blocking operations
-- Efficient file streaming for uploads
-
-## Troubleshooting
-
-### Port Already in Use
-Change the port in `.env` or `config/config.js`
-
-### Upload Fails
-- Check file size limits in configuration
-- Ensure `store` directory has write permissions
-- Check available disk space
-
-### Files Not Showing
-- Verify `store` directory exists
-- Check file permissions
-- Review server logs for errors
 
 ## Contributing
 
